@@ -9,7 +9,7 @@
 
 [Контейнерная диаграмма С4](cinemaabyss-c4-container-diagram.puml)
 
-[PNG диаграмма](CinemaAbyss%20To-Be%20Container%20Diagram.png)
+![PNG диаграмма](CinemaAbyss%20To-Be%20Container%20Diagram.png)
 
 # Задание 2
 
@@ -61,7 +61,20 @@
     - Добавьте в docker-compose новый сервис, kafka там уже есть
 
 Необходимые тесты для проверки этого API вызываются при запуске npm run test:local из папки tests/postman 
-Приложите скриншот тестов и скриншот состояния топиков Kafka из UI http://localhost:8090 
+Приложите скриншот тестов и скриншот состояния топиков Kafka из UI http://localhost:8090
+
+### Скриншоты результатов тестирования:
+
+**1. Результаты Postman тестов:**
+![Результаты Postman тестов](screenshots/tests_postman.png)
+
+**2. Состояние топиков Kafka из UI:**
+![Топики Kafka](screenshots/kafka_topics.png)
+
+**3. Вывод тестов в терминале:**
+![Тесты в терминале](screenshots/tests_terminal.png) 
+
+
 
 # Задание 3
 
@@ -113,6 +126,7 @@ jobs:
 Как только сборка отработает и в github registry появятся ваши образы, можно переходить к блоку настройки Kubernetes
 Успешным результатом данного шага является "зеленая" сборка и "зеленые" тесты
 
+![Зеленая сборка CI/CD](screenshots/green_cicd.png)
 
 ### Proxy в Kubernetes
 
