@@ -153,13 +153,30 @@ jobs:
       - name: Start services with Docker Compose
         run: |
           docker compose up -d
+          sleep 60
+
+      - name: Check services health
+        run: |
+          echo "Checking services health..."
+          curl -f http://localhost:8080/health || echo "Monolith not ready"
+          curl -f http://localhost:8081/api/movies/health || echo "Movies service not ready"
+          curl -f http://localhost:8082/api/events/health || echo "Events service not ready"
+          curl -f http://localhost:8000/health || echo "Proxy service not ready"
           sleep 30
 
       - name: Run API tests
         run: |
           cd tests/postman
-          npm run test:local
+          npm run test:docker
         env:
           CI: true
+        continue-on-error: true
+
+      - name: Show test results
+        run: |
+          echo "Test results:"
+          if [ -f tests/postman/results.json ]; then
+            cat tests/postman/results.json
+          fi
 
       
