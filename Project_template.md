@@ -35,7 +35,7 @@
       PORT: 8000
       MONOLITH_URL: http://monolith:8080
       #монолит
-      MOVIES_SERVICE_URL: http://movies-service:8081 #сервис movies
+      MOVIES_SERVICE_URL: "http://movies-service:8081"
       EVENTS_SERVICE_URL: http://events-service:8082 
       GRADUAL_MIGRATION: "true" # вкл/выкл простого фиче-флага
       MOVIES_MIGRATION_PERCENT: "50" # процент миграции
@@ -307,7 +307,7 @@ cat .docker/config.json | base64
 proxyService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/proxy-service
+    repository: ghcr.io/practicumstudent2025/architecture-cinemaabyss/proxy-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -322,9 +322,11 @@ proxyService:
     port: 80
     targetPort: 8000
     type: ClusterIP
+  imagePullSecrets:
+    - name: dockerconfigjson
 ```
 
-- Вместо ghcr.io/db-exp/cinemaabysstest/proxy-service напишите свой путь до образа для всех сервисов
+- Вместо ghcr.io/practicumstudent2025/architecture-cinemaabyss/proxy-service напишите свой путь до образа для всех сервисов
 - для imagePullSecret проставьте свое значение (скопируйте из конфигурации kubernetes)
   ```yaml
   imagePullSecrets:
@@ -362,13 +364,20 @@ kafka.common.InconsistentClusterIdException: The Cluster ID OkOjGPrdRimp8nkFohYk
 
 Проверьте развертывание:
 ```bash
-kubectl get pods -n cinemaabyss
+kubectl get pods -n cinem
+aabyss
 minikube tunnel
 ```
 
 Потом вызовите 
 https://cinemaabyss.example.com/api/movies
 и приложите скриншот развертывания helm и вывода https://cinemaabyss.example.com/api/movies
+
+Cкриншот развертывания helm
+![Cкриншот развертывания helm](screenshots/Helm.png)
+
+Вывод movies
+![Вывод movies](screenshots/Movies.png)
 
 ## Удаляем все
 
