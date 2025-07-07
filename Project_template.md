@@ -3,18 +3,22 @@
 # Задание 1
 
 1. Спроектируйте to be архитектуру КиноБездны, разделив всю систему на отдельные домены и организовав интеграционное взаимодействие и единую точку вызова сервисов.
+
 Результат представьте в виде контейнерной диаграммы в нотации С4.
 Добавьте ссылку на файл в этот шаблон
-[ссылка на файл](ссылка)
+
+[Контейнерная диаграмма С4](cinemaabyss-c4-container-diagram.puml)
+
+![PNG диаграмма](CinemaAbyss%20To-Be%20Container%20Diagram.png)
 
 # Задание 2
 
 ### 1. Proxy
 Команда КиноБездны уже выделила сервис метаданных о фильмах movies и вам необходимо реализовать бесшовный переход с применением паттерна Strangler Fig в части реализации прокси-сервиса (API Gateway), с помощью которого можно будет постепенно переключать траффик, используя фиче-флаг.
 
-
 Реализуйте сервис на любом языке программирования в ./src/microservices/proxy.
 Конфигурация для запуска сервиса через docker-compose уже добавлена
+
 ```yaml
   proxy-service:
     build:
@@ -31,7 +35,7 @@
       PORT: 8000
       MONOLITH_URL: http://monolith:8080
       #монолит
-      MOVIES_SERVICE_URL: http://movies-service:8081 #сервис movies
+      MOVIES_SERVICE_URL: "http://movies-service:8081"
       EVENTS_SERVICE_URL: http://events-service:8082 
       GRADUAL_MIGRATION: "true" # вкл/выкл простого фиче-флага
       MOVIES_MIGRATION_PERCENT: "50" # процент миграции
@@ -57,7 +61,20 @@
     - Добавьте в docker-compose новый сервис, kafka там уже есть
 
 Необходимые тесты для проверки этого API вызываются при запуске npm run test:local из папки tests/postman 
-Приложите скриншот тестов и скриншот состояния топиков Kafka из UI http://localhost:8090 
+Приложите скриншот тестов и скриншот состояния топиков Kafka из UI http://localhost:8090
+
+### Скриншоты результатов тестирования:
+
+**1. Результаты Postman тестов:**
+![Результаты Postman тестов](screenshots/tests_postman.png)
+
+**2. Состояние топиков Kafka из UI:**
+![Топики Kafka](screenshots/kafka_topics.png)
+
+**3. Вывод тестов в терминале:**
+![Тесты в терминале](screenshots/tests_terminal.png) 
+
+
 
 # Задание 3
 
@@ -109,6 +126,7 @@ jobs:
 Как только сборка отработает и в github registry появятся ваши образы, можно переходить к блоку настройки Kubernetes
 Успешным результатом данного шага является "зеленая" сборка и "зеленые" тесты
 
+![Зеленая сборка CI/CD](screenshots/green_cicd.png)
 
 ### Proxy в Kubernetes
 
@@ -275,6 +293,8 @@ cat .docker/config.json | base64
 #### Шаг 3
 Добавьте сюда скриншота вывода при вызове https://cinemaabyss.example.com/api/movies и  скриншот вывода event-service после вызова тестов.
 
+![тесты](screenshots/Tests.png)
+![events логи](screenshots/Events_log.png)
 
 # Задание 4
 Для простоты дальнейшего обновления и развертывания вам как архитектуру необходимо так же реализовать helm-чарты для прокси-сервиса и проверить работу 
@@ -287,7 +307,7 @@ cat .docker/config.json | base64
 proxyService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/proxy-service
+    repository: ghcr.io/practicumstudent2025/architecture-cinemaabyss/proxy-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -302,9 +322,11 @@ proxyService:
     port: 80
     targetPort: 8000
     type: ClusterIP
+  imagePullSecrets:
+    - name: dockerconfigjson
 ```
 
-- Вместо ghcr.io/db-exp/cinemaabysstest/proxy-service напишите свой путь до образа для всех сервисов
+- Вместо ghcr.io/practicumstudent2025/architecture-cinemaabyss/proxy-service напишите свой путь до образа для всех сервисов
 - для imagePullSecret проставьте свое значение (скопируйте из конфигурации kubernetes)
   ```yaml
   imagePullSecrets:
@@ -342,13 +364,20 @@ kafka.common.InconsistentClusterIdException: The Cluster ID OkOjGPrdRimp8nkFohYk
 
 Проверьте развертывание:
 ```bash
-kubectl get pods -n cinemaabyss
+kubectl get pods -n cinem
+aabyss
 minikube tunnel
 ```
 
 Потом вызовите 
 https://cinemaabyss.example.com/api/movies
 и приложите скриншот развертывания helm и вывода https://cinemaabyss.example.com/api/movies
+
+Cкриншот развертывания helm
+![Cкриншот развертывания helm](screenshots/Helm.png)
+
+Вывод movies
+![Вывод movies](screenshots/Movies.png)
 
 ## Удаляем все
 

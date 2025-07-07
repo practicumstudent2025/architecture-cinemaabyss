@@ -1,0 +1,134 @@
+@startuml CinemaAbyss To-Be Container Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title To-Be Архитектура КиноБездны - Контейнерная диаграмма
+
+Person(webUser, "Web User", "Пользователь веб-приложения")
+Person(mobileUser, "Mobile User", "Пользователь мобильного приложения")
+Person(tvUser, "Smart TV User", "Пользователь Smart TV")
+
+System_Boundary(c1, "Клиентские приложения") {
+    Container(webApp, "Web Application", "React SPA", "Предоставляет веб-интерфейс для просмотра фильмов")
+    Container(mobileApp, "Mobile Application", "React Native", "Мобильное приложение для iOS/Android")
+    Container(tvApp, "Smart TV Application", "Android TV", "Приложение для Smart TV")
+}
+
+System_Boundary(c2, "API Gateway Layer") {
+    Container(apiGateway, "API Gateway", "Kong/Envoy", "Единая точка входа для всех API запросов, аутентификация, маршрутизация")
+}
+
+System_Boundary(c3, "Микросервисы") {
+    Container(authService, "Auth Service", "Go, Gin", "Аутентификация и авторизация пользователей, JWT токены")
+    Container(userService, "User Service", "Go, Gin", "Управление профилями пользователей, настройки, избранное")
+    Container(movieService, "Movie Service", "Go, Gin", "Метаданные фильмов, жанры, актеры, рейтинги")
+    Container(contentService, "Content Service", "Go, Gin", "Видео контент, стриминг, управление качеством")
+    Container(paymentService, "Payment Service", "Go, Gin", "Платежи, подписки, скидки, интеграция с платежными системами")
+    Container(notificationService, "Notification Service", "Go, Gin", "Email, SMS, Push уведомления")
+    Container(recommendationService, "Recommendation Service", "Python, FastAPI", "ML-рекомендации, персонализация контента")
+    Container(eventService, "Event Service", "Go, Gin", "События системы, аудит, аналитика")
+}
+
+System_Boundary(c4, "Внешние системы") {
+    Container(paymentGateway, "Payment Gateway", "Stripe/PayPal", "Внешняя платежная система")
+    Container(emailProvider, "Email Provider", "SendGrid", "Провайдер email уведомлений")
+    Container(smsProvider, "SMS Provider", "Twilio", "Провайдер SMS уведомлений")
+    Container(pushProvider, "Push Provider", "Firebase", "Провайдер push уведомлений")
+    Container(externalAPIs, "External APIs", "TMDB, IMDB", "Внешние API для метаданных фильмов")
+}
+
+System_Boundary(c5, "Инфраструктура") {
+    ContainerDb(postgresql, "PostgreSQL", "PostgreSQL 14", "Основная база данных для пользователей, фильмов, платежей")
+    ContainerDb(redis, "Redis", "Redis 7", "Кэш и сессии пользователей")
+    ContainerDb(kafka, "Apache Kafka", "Kafka 3", "Event streaming для асинхронного взаимодействия")
+    ContainerDb(elasticsearch, "Elasticsearch", "Elasticsearch 8", "Поиск и логирование")
+    ContainerDb(minio, "MinIO", "MinIO", "S3-совместимое хранилище для видео контента")
+}
+
+System_Boundary(c6, "Мониторинг и логирование") {
+    Container(prometheus, "Prometheus", "Prometheus", "Сбор метрик с микросервисов")
+    Container(grafana, "Grafana", "Grafana", "Визуализация метрик и дашборды")
+    Container(jaeger, "Jaeger", "Jaeger", "Распределенный трейсинг")
+    Container(elk, "ELK Stack", "Elasticsearch, Logstash, Kibana", "Централизованное логирование")
+}
+
+System_Boundary(c7, "Kubernetes Infrastructure") {
+    Container(ingress, "Ingress Controller", "NGINX", "Входящий трафик и SSL termination")
+    Container(certManager, "Cert Manager", "Cert Manager", "Управление SSL/TLS сертификатами")
+}
+
+' Связи от пользователей к клиентским приложениям
+Rel(webUser, webApp, "Использует", "HTTPS")
+Rel(mobileUser, mobileApp, "Использует", "HTTPS")
+Rel(tvUser, tvApp, "Использует", "HTTPS")
+
+' Связи от клиентских приложений к API Gateway
+Rel(webApp, apiGateway, "API calls", "HTTPS/REST")
+Rel(mobileApp, apiGateway, "API calls", "HTTPS/REST")
+Rel(tvApp, apiGateway, "API calls", "HTTPS/REST")
+
+' Связи от API Gateway к микросервисам
+Rel(apiGateway, authService, "Аутентификация", "HTTP/REST")
+Rel(apiGateway, userService, "Управление пользователями", "HTTP/REST")
+Rel(apiGateway, movieService, "Метаданные фильмов", "HTTP/REST")
+Rel(apiGateway, contentService, "Видео контент", "HTTP/REST")
+Rel(apiGateway, paymentService, "Платежи", "HTTP/REST")
+Rel(apiGateway, notificationService, "Уведомления", "HTTP/REST")
+Rel(apiGateway, recommendationService, "Рекомендации", "HTTP/REST")
+Rel(apiGateway, eventService, "События", "HTTP/REST")
+
+' Связи микросервисов с базами данных
+Rel(authService, postgresql, "Читает/пишет", "SQL")
+Rel(userService, postgresql, "Читает/пишет", "SQL")
+Rel(movieService, postgresql, "Читает/пишет", "SQL")
+Rel(contentService, minio, "Читает/пишет", "S3 API")
+Rel(paymentService, postgresql, "Читает/пишет", "SQL")
+Rel(notificationService, redis, "Кэш уведомлений", "Redis Protocol")
+
+' Связи с внешними системами
+Rel(paymentService, paymentGateway, "Платежи", "HTTPS/REST")
+Rel(notificationService, emailProvider, "Email уведомления", "SMTP/HTTPS")
+Rel(notificationService, smsProvider, "SMS уведомления", "HTTPS/REST")
+Rel(notificationService, pushProvider, "Push уведомления", "HTTPS/REST")
+Rel(movieService, externalAPIs, "Метаданные фильмов", "HTTPS/REST")
+
+' Event-driven связи через Kafka
+Rel(eventService, kafka, "Публикует события", "Kafka Protocol")
+Rel(recommendationService, kafka, "Потребляет события", "Kafka Protocol")
+Rel(paymentService, kafka, "Публикует события платежей", "Kafka Protocol")
+Rel(userService, kafka, "Публикует события пользователей", "Kafka Protocol")
+
+' Мониторинг и логирование
+Rel(authService, prometheus, "Метрики", "HTTP")
+Rel(userService, prometheus, "Метрики", "HTTP")
+Rel(movieService, prometheus, "Метрики", "HTTP")
+Rel(contentService, prometheus, "Метрики", "HTTP")
+Rel(paymentService, prometheus, "Метрики", "HTTP")
+Rel(notificationService, prometheus, "Метрики", "HTTP")
+Rel(recommendationService, prometheus, "Метрики", "HTTP")
+Rel(eventService, prometheus, "Метрики", "HTTP")
+
+Rel(authService, jaeger, "Трейсинг", "HTTP")
+Rel(userService, jaeger, "Трейсинг", "HTTP")
+Rel(movieService, jaeger, "Трейсинг", "HTTP")
+Rel(contentService, jaeger, "Трейсинг", "HTTP")
+Rel(paymentService, jaeger, "Трейсинг", "HTTP")
+Rel(notificationService, jaeger, "Трейсинг", "HTTP")
+Rel(recommendationService, jaeger, "Трейсинг", "HTTP")
+Rel(eventService, jaeger, "Трейсинг", "HTTP")
+
+Rel(authService, elk, "Логи", "HTTP")
+Rel(userService, elk, "Логи", "HTTP")
+Rel(movieService, elk, "Логи", "HTTP")
+Rel(contentService, elk, "Логи", "HTTP")
+Rel(paymentService, elk, "Логи", "HTTP")
+Rel(notificationService, elk, "Логи", "HTTP")
+Rel(recommendationService, elk, "Логи", "HTTP")
+Rel(eventService, elk, "Логи", "HTTP")
+
+' Kubernetes инфраструктура
+Rel(apiGateway, ingress, "Входящий трафик", "HTTP")
+Rel(ingress, certManager, "SSL сертификаты", "HTTP")
+
+@enduml 
