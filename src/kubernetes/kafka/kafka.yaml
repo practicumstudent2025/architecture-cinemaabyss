@@ -135,11 +135,11 @@ spec:
           name: kafka
         resources:
           requests:
-            memory: "512Mi"
-            cpu: "200m"
+            memory: "3Gi"
+            cpu: "500m"
           limits:
-            memory: "1Gi"
-            cpu: "1000m"
+            memory: "6Gi"
+            cpu: "2"
         env:
         - name: KAFKA_ADVERTISED_LISTENERS
           value: PLAINTEXT://kafka:9092

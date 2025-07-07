@@ -66,6 +66,8 @@ func init() {
 	logger.SetFormatter(&logrus.JSONFormatter{})
 	logger.SetLevel(logrus.InfoLevel)
 
+	log.Println("Init started")
+
 	// Initialize Kafka producer
 	config := sarama.NewConfig()
 	config.Producer.Return.Successes = true
@@ -80,14 +82,18 @@ func init() {
 	var err error
 	producer, err = sarama.NewSyncProducer([]string{kafkaBrokers}, config)
 	if err != nil {
+		log.Printf("Failed to create Kafka producer: %v", err)
 		logger.Fatalf("Failed to create Kafka producer: %v", err)
 	}
+	log.Println("Kafka producer created")
 
 	// Initialize Kafka consumer
 	consumer, err = sarama.NewConsumer([]string{kafkaBrokers}, nil)
 	if err != nil {
+		log.Printf("Failed to create Kafka consumer: %v", err)
 		logger.Fatalf("Failed to create Kafka consumer: %v", err)
 	}
+	log.Println("Kafka consumer created")
 
 	// Start consuming events
 	go consumeEvents()
@@ -96,6 +102,7 @@ func init() {
 }
 
 func main() {
+	log.Println("Events service started")
 	r := mux.NewRouter()
 
 	// Health check endpoint
